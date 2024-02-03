@@ -1,0 +1,73 @@
+body {
+    background-color: #111; /* Darker gray background */
+    color: #ddd; /* Light gray text color */
+    font-family: 'Open Sans', sans-serif; /* Modern font */
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.container {
+    position: relative; /* Relative positioning for arrows */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Align content at the top */
+}
+
+.text-field {
+    width: 300px;
+    padding: 10px; /* Decreased padding */
+    font-size: 16px;
+    border: 2px solid #007770; /* Border color #007770 */
+    border-radius: 7px; /* Updated corner radius to 7 */
+    background-color: #333; /* Darker gray for the text field */
+    color: #ddd;
+    margin-top: 20px; /* Added distance between the field and the top */
+    position: relative;
+}
+
+.top-10-box {
+    width: 500px;
+    padding: 10px; /* Adjust padding as needed */
+    border: 2px solid #007770; /* Border color for the top 10 box */
+    border-radius: 7px; /* Rounded corners */
+    background-color: #333; /* Darker gray for the box */
+    color: #777; /* Small gray text color for the header */
+    position: relative;
+}
+
+.large-text {
+    font-size: 24px;
+    color: #fff; /* White text color */
+    margin-top: 20px; /* Adjusted distance between the text field and large text */
+    position: relative;
+}
+
+.arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 20px 20px;
+    border-color: transparent transparent #007770 transparent;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.top-10-box ol {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.top-10-box ol li {
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+/* Added spacing between elements */
+.container > * {
+    margin-bottom: 50px;
+}
