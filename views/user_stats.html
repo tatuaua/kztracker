@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Express App</title>
     <link rel="shortcut icon" href="#">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <style>
         body {
         background-color: #111;
         color: #ddd;
-        font-family: 'Open Sans', sans-serif; 
+        font-family: "Poppins";
         margin: 0;
         padding: 0;
         text-align: center;
@@ -39,6 +42,18 @@
     .pointsline {
         width: 800px;
         padding: 10px; 
+        padding-top: 20px;
+        border: 2px solid #007770; 
+        border-radius: 7px;
+        background-color: #333; 
+        color: #777;
+        position: relative;
+    }
+
+    .pointsavgline {
+        width: 800px;
+        padding: 10px;
+        padding-top: 20px;
         border: 2px solid #007770; 
         border-radius: 7px;
         background-color: #333; 
@@ -71,7 +86,8 @@
     <div class="container">
         <input type="text" id="steamIdField" class="text-field" placeholder="Steam ID" onkeydown="checkEnter(event)">
         <div class="pointsline">
-            <div class="header">Points progression</div>
+        </div>
+        <div class="pointsavgline">
         </div>
     </div>
 
@@ -79,24 +95,30 @@
 
     <script>
 
+        var steamid = "<%= steamid %>";
+
         window.onload = showUserStats();
 
         function checkEnter(event) {
             if (event.key === "Enter") {
-                showUserStats();
+                loadStatsPage();
             }
         }
 
-        function showUserStats() {
+        function loadStatsPage() {
             var userInput = document.getElementById('steamIdField').value;
+            window.location.href = '/' + userInput;
+        }
 
-            var playerName = getUserName(userInput);
+        function showUserStats() {
+            var playerName = getUserName(steamid);
 
             // Call getUserStats and wait for the promise to resolve
-            getUserStats('123')
+            getUserStats(steamid)
                 .then(data => {
                     if (data && data.length > 0) {
-                        renderLineGraph(data, playerName);
+                        renderPointsLine(data, playerName);
+                        renderPointsAvgLine(data, playerName);
                     } else {
                         console.error("Empty or invalid data received");
                     }
@@ -107,10 +129,16 @@
         }
 
         function getUserName(steamid){
+            //Get username from steam API
             return "PlayerName";
         }
 
-        function renderLineGraph(data, playerName) {
+        //from borbkz kz.gl
+        function isValidSteamId32(steamID) {
+            return /^STEAM_[0-5]:[01]:\d+$/.test(steamID);
+        }
+
+        function renderPointsLine(data, playerName) {
             // Select the container for the line graph
             var container = d3.select(".pointsline");
 
@@ -197,6 +225,95 @@
                 .style("font-size", "20px")
                 .style("fill", axisColor)
                 .text(playerName + "'s Pro Points Progression");
+        }
+
+        function renderPointsAvgLine(data, playerName) {
+            // Select the container for the line graph
+            var container = d3.select(".pointsavgline");
+
+            // Set the dimensions and increased margins of the graph
+            var width = 800;
+            var height = 400;
+            var margin = { top: 50, right: 50, bottom: 50, left: 70 };
+
+            // Parse the date/time
+            var parseTime = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
+
+            // Define colors
+            var lineColor = "#007770";  // Line color
+            var axisColor = "#ffffff";  // Axis color
+
+            // Format the data
+            data.forEach(function (d) {
+                d.timeStamp = new Date(d.timeStamp);
+            });
+
+            // Set the ranges
+            var x = d3.scaleTime().range([0, width - margin.left - margin.right]);
+            var y = d3.scaleLinear().range([height - margin.top - margin.bottom, 0]);
+
+            // Define the line
+            var valueline = d3.line()
+                .x(function (d) { return x(d.timeStamp); })
+                .y(function (d) { return y(d.proPoints / d.proCompletions); })
+                .curve(d3.curveMonotoneX);
+
+            // Append an SVG object to the container with adjusted dimensions
+            var svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // Scale the range of the data
+            x.domain(d3.extent(data, function (d) { return d.timeStamp; }));
+            y.domain([0, d3.max(data, function (d) { return d.proPoints / d.proCompletions; })]);
+
+            // Add the valueline path with line color
+            svg.append("path")
+                .data([data])
+                .attr("class", "line")
+                .attr("d", valueline)
+                .style("stroke", lineColor)
+                .style("fill", "none");
+
+            // Add the X Axis with adjusted dimensions and axis color
+            svg.append("g")
+                .attr("transform", "translate(0," + (height - margin.top - margin.bottom) + ")")
+                .call(d3.axisBottom(x).tickSizeOuter(0))
+                .selectAll("text")
+                .style("fill", axisColor);
+
+            // Add the Y Axis with adjusted dimensions and axis color
+            svg.append("g")
+                .call(d3.axisLeft(y).tickSizeOuter(0))
+                .selectAll("text")
+                .style("fill", axisColor);
+
+            // Add a title
+            svg.append("text")
+                .attr("transform", "translate(" + ((width - margin.left - margin.right) / 2) + " ," + (height - margin.top) + ")")
+                .style("text-anchor", "middle")
+                .style("fill", axisColor)
+                .text("Date");
+
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - ((height - margin.top - margin.bottom) / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .style("fill", axisColor)
+                .text("Points average");
+
+            // Add a title with axis color
+            svg.append("text")
+                .attr("x", (width - margin.left - margin.right) / 2)
+                .attr("y", 0 - (margin.top / 2))
+                .attr("text-anchor", "middle")
+                .style("font-size", "20px")
+                .style("fill", axisColor)
+                .text(playerName + "'s Points Average Progression");
         }
 
         async function getUserStats(steamid) {
