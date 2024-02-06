@@ -3,16 +3,26 @@
 window.onload = getTop10();
 
 function checkEnter(event) {
-    if (event.key === "Enter") {
-        const steamid = document.getElementById('steamIdField').value;
-        if(isValidSteamId32(steamid)){
-            loadStatsPage(steamid);
-        }
-    }
-}
+    const steamIdField = document.getElementById('steamIdField');
+    const errorMessage = document.getElementById('errorMessage');
 
-function loadStatsPage(steamid) {
-    window.location.href = '/' + steamid;
+    if (event.key === "Enter") {
+        const steamId = steamIdField.value;
+        if (isValidSteamId32(steamId)) {
+            loadStatsPage(steamId);
+            errorMessage.style.display = 'none'; // Hide error message if valid
+        } else {
+            steamIdField.style.border = "2px solid #fc0303";
+            errorMessage.style.display = 'block'; // Show error message
+        }
+    } else {
+        steamIdField.style.border = "2px solid #007770";
+        errorMessage.style.display = 'none'; // Hide error message on keypress
+    }
+  }
+
+function loadStatsPage(steamId) {
+    window.location.href = '/' + steamId;
 }
 
 async function getTop10() {
@@ -24,6 +34,6 @@ async function getTop10() {
 }
 
 //from borbkz kz.gl
-function isValidSteamId32(steamid) {
-    return /^STEAM_[0-5]:[01]:\d+$/.test(steamid);
+function isValidSteamId32(steamId) {
+    return /^STEAM_[0-5]:[01]:\d+$/.test(steamId);
 }

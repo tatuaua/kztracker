@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Express App</title>
+    <title>KZTracker</title>
     <link rel="shortcut icon" href="#">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +37,7 @@
         color: #ddd;
         margin-top: 20px; 
         position: relative;
+        transition: border 0.25s ease;
     }
 
     .top-10-box {
@@ -85,19 +86,21 @@
     }
 
     .container > * {
-        margin-bottom: 50px;
+        margin-bottom: 40px;
     }
 
-    #userInputContent {
-        margin-top: 20px;
-        color: #fff;
+    #errorMessage {
+        color: #fc0303;
+        font-size: 14px;
+        display: none;
     }
+
     </style>
 </head>
 <body>
     <div class="container">
         <input type="text" id="steamIdField" class="text-field" placeholder="Steam ID" onkeydown="checkEnter(event)">
-        <div class="arrow"></div>
+        <div id="errorMessage">Invalid Steam ID</div>
         <div class="large-text">
             Input a Steam ID to receive insights about your KZ progress
         </div>

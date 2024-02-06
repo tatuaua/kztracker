@@ -1,27 +1,38 @@
 "use strict";
 
-window.onload = showUserStats();
+window.onload = showUserStats(),
+    document.title = "KZTracker - " + getUserName(steamId);
 
 function checkEnter(event) {
     if (event.key === "Enter") {
-        loadStatsPage();
+        const steamId = document.getElementById('steamIdField').value;
+        if (isValidSteamId32(steamId)) {
+            loadStatsPage(steamId);
+        }
     }
 }
 
-function loadStatsPage() {
-    var userInput = document.getElementById('steamIdField').value;
-    window.location.href = '/' + userInput;
+//from borbkz kz.gl
+function isValidSteamId32(steamId) {
+    return /^STEAM_[0-5]:[01]:\d+$/.test(steamId);
+}
+
+function loadStatsPage(steamId) {
+    window.location.href = '/' + steamId;
 }
 
 function showUserStats() {
-    var playerName = getUserName(steamid);
+    var playerName = getUserName(steamId);
 
     // Call getUserStats and wait for the promise to resolve
-    getUserStats(steamid)
+    getUserStats(steamId)
         .then(data => {
             if (data && data.length > 0) {
+                const start = performance.now();
                 renderPointsLine(data, playerName);
                 renderPointsAvgLine(data, playerName);
+                const end = performance.now();
+                console.log(`Execution time: ${end - start} ms`);
             } else {
                 console.error("Empty or invalid data received");
             }
@@ -31,14 +42,34 @@ function showUserStats() {
         });
 }
 
-function getUserName(steamid){
+function getUserName(steamId) {
     //Get username from steam API
     return "PlayerName";
 }
 
 //from borbkz kz.gl
-function isValidSteamId32(steamID) {
-    return /^STEAM_[0-5]:[01]:\d+$/.test(steamID);
+function isValidSteamId32(steamId) {
+    return /^STEAM_[0-5]:[01]:\d+$/.test(steamId);
+}
+
+async function getUserStats(steamId) {
+    let clonedResponse = null;
+    try {
+        const response = await fetch("http://localhost:3000/stats/" + steamId);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        return data;
+
+    } catch (error) {
+        console.error('Fetch error:', error.message);
+        console.log(clonedResponse);
+        throw error;
+    }
 }
 
 function renderPointsLine(data, playerName) {
@@ -247,25 +278,4 @@ function renderPointsAvgLine(data, playerName) {
         .style("font-size", "20px")
         .style("fill", axisColor)
         .text(playerName + "'s Points Average Progression");
-}
-
-
-async function getUserStats(steamid) {
-    let clonedResponse = null;
-    try {
-        const response = await fetch("http://localhost:3000/stats/" + steamid);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        return data;
-
-    } catch (error) {
-        console.error('Fetch error:', error.message);
-        console.log(clonedResponse);
-        throw error;
-    }
 }
