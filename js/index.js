@@ -19,9 +19,10 @@ function checkEnter(event) {
         steamIdField.style.border = "2px solid #007770";
         errorMessage.style.display = 'none'; // Hide error message on keypress
     }
-  }
+}
 
 function loadStatsPage(steamId) {
+    console.log(steamId);
     window.location.href = '/' + steamId;
 }
 

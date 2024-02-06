@@ -1,13 +1,16 @@
 "use strict";
 
+const tempElement = document.createElement("div");
+tempElement.innerHTML = steamId;
+const steamIdDecoded = tempElement.textContent;
+
 window.onload = showUserStats(),
-    document.title = "KZTracker - " + getUserName(steamId);
+    document.title = "KZTracker - " + getUserName(steamIdDecoded);
 
 function checkEnter(event) {
     if (event.key === "Enter") {
-        const steamId = document.getElementById('steamIdField').value;
-        if (isValidSteamId32(steamId)) {
-            loadStatsPage(steamId);
+        if (isValidSteamId32(document.getElementById('steamIdField').value)) {
+            loadStatsPage(document.getElementById('steamIdField').value);
         }
     }
 }
@@ -22,10 +25,10 @@ function loadStatsPage(steamId) {
 }
 
 function showUserStats() {
-    var playerName = getUserName(steamId);
+    var playerName = getUserName(steamIdDecoded);
 
     // Call getUserStats and wait for the promise to resolve
-    getUserStats(steamId)
+    getUserStats(steamIdDecoded)
         .then(data => {
             if (data && data.length > 0) {
                 const start = performance.now();

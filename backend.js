@@ -31,21 +31,24 @@ app.get('/stats/:steamId', (req, res) => {
 
     const steamId = req.params.steamId;
 
-    /*const myData = [
-      { proPoints: 2000, proRecords: 3, proCompletions: 7, tpPoints: 100, tpCompletions: 5, timeStamp: "2017-01-01T17:09:42.411" },
-      { proPoints: 2500, proRecords: 5, proCompletions: 12, tpPoints: 150, tpCompletions: 8, timeStamp: "2017-01-02T17:09:42.411" },
-      { proPoints: 2800, proRecords: 7, proCompletions: 15, tpPoints: 180, tpCompletions: 10, timeStamp: "2017-01-03T17:09:42.411" },
-      { proPoints: 3200, proRecords: 9, proCompletions: 18, tpPoints: 200, tpCompletions: 12, timeStamp: "2017-01-04T17:09:42.411" },
-      { proPoints: 3700, proRecords: 12, proCompletions: 23, tpPoints: 250, tpCompletions: 15, timeStamp: "2017-01-05T17:09:42.411" },
-      { proPoints: 4100, proRecords: 15, proCompletions: 27, tpPoints: 300, tpCompletions: 18, timeStamp: "2017-01-06T17:09:42.411" },
-      { proPoints: 4500, proRecords: 18, proCompletions: 30, tpPoints: 350, tpCompletions: 20, timeStamp: "2017-01-07T17:09:42.411" },
-      { proPoints: 5000, proRecords: 22, proCompletions: 32, tpPoints: 400, tpCompletions: 22, timeStamp: "2017-01-08T17:09:42.411" },
-      { proPoints: 5500, proRecords: 26, proCompletions: 35, tpPoints: 450, tpCompletions: 25, timeStamp: "2017-01-09T17:09:42.411" },
-      { proPoints: 6000, proRecords: 30, proCompletions: 38, tpPoints: 500, tpCompletions: 28, timeStamp: "2017-01-10T17:09:42.411" },
-      { proPoints: 6500, proRecords: 35, proCompletions: 42, tpPoints: 550, tpCompletions: 30, timeStamp: "2017-01-11T17:09:42.411" },
-      { proPoints: 7000, proRecords: 40, proCompletions: 44, tpPoints: 600, tpCompletions: 32, timeStamp: "2017-01-12T17:09:42.411" },
-      { proPoints: 10000, proRecords: 40, proCompletions: 50, tpPoints: 1000, tpCompletions: 40, timeStamp: "2017-01-13T17:09:42.411" }
-    ];*/
+     // Check if the database instance is available
+     if (!db) {
+        console.error('Database instance not available.');
+        return;
+    }
+
+    console.log(steamId);
+
+    let sql = "SELECT * FROM snapshots WHERE steamId == " + steamId ;
+
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            throw err;
+        }
+        rows.forEach((row) => {
+            console.log(row.steamId);
+        });
+    });
 
     res.json(generateData(400));
 
@@ -158,8 +161,25 @@ function generateData(days) {
             tpRecords += Math.floor(Math.random()) + 1;
             tpCompletions += Math.floor(Math.random() * 4) + 1;
         }
+
+        steamId = "STEAM_1:1:" + Math.floor(Math.random() * 10) + 1;
     }
 
-    console.log(data[4]);
     return data;
 }
+
+/*const myData = [
+      { proPoints: 2000, proRecords: 3, proCompletions: 7, tpPoints: 100, tpCompletions: 5, timeStamp: "2017-01-01T17:09:42.411" },
+      { proPoints: 2500, proRecords: 5, proCompletions: 12, tpPoints: 150, tpCompletions: 8, timeStamp: "2017-01-02T17:09:42.411" },
+      { proPoints: 2800, proRecords: 7, proCompletions: 15, tpPoints: 180, tpCompletions: 10, timeStamp: "2017-01-03T17:09:42.411" },
+      { proPoints: 3200, proRecords: 9, proCompletions: 18, tpPoints: 200, tpCompletions: 12, timeStamp: "2017-01-04T17:09:42.411" },
+      { proPoints: 3700, proRecords: 12, proCompletions: 23, tpPoints: 250, tpCompletions: 15, timeStamp: "2017-01-05T17:09:42.411" },
+      { proPoints: 4100, proRecords: 15, proCompletions: 27, tpPoints: 300, tpCompletions: 18, timeStamp: "2017-01-06T17:09:42.411" },
+      { proPoints: 4500, proRecords: 18, proCompletions: 30, tpPoints: 350, tpCompletions: 20, timeStamp: "2017-01-07T17:09:42.411" },
+      { proPoints: 5000, proRecords: 22, proCompletions: 32, tpPoints: 400, tpCompletions: 22, timeStamp: "2017-01-08T17:09:42.411" },
+      { proPoints: 5500, proRecords: 26, proCompletions: 35, tpPoints: 450, tpCompletions: 25, timeStamp: "2017-01-09T17:09:42.411" },
+      { proPoints: 6000, proRecords: 30, proCompletions: 38, tpPoints: 500, tpCompletions: 28, timeStamp: "2017-01-10T17:09:42.411" },
+      { proPoints: 6500, proRecords: 35, proCompletions: 42, tpPoints: 550, tpCompletions: 30, timeStamp: "2017-01-11T17:09:42.411" },
+      { proPoints: 7000, proRecords: 40, proCompletions: 44, tpPoints: 600, tpCompletions: 32, timeStamp: "2017-01-12T17:09:42.411" },
+      { proPoints: 10000, proRecords: 40, proCompletions: 50, tpPoints: 1000, tpCompletions: 40, timeStamp: "2017-01-13T17:09:42.411" }
+    ];*/
