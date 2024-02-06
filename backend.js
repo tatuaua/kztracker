@@ -39,18 +39,20 @@ app.get('/stats/:steamId', (req, res) => {
 
     console.log(steamId);
 
-    let sql = "SELECT * FROM snapshots WHERE steamId == " + steamId ;
+    let sql = "SELECT * FROM snapshots WHERE steamId == " + steamId + "ORDER BY timestamp" ;
+
+    let rows;
 
     db.all(sql, [], (err, rows) => {
         if (err) {
             throw err;
         }
-        rows.forEach((row) => {
-            console.log(row.steamId);
-        });
+
+        console.log(rows);
+        res.json(rows);
     });
 
-    res.json(generateData(400));
+    //res.json(generateData(400));
 
 })
 
@@ -59,7 +61,23 @@ app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
     createDB();
 
-    data = generateData(400);
+    data = generateData(50, "STEAM_1:1:1");
+    for (const snapshot of data) {
+        insertSnapshot(snapshot);
+    }
+    data = generateData(50, "STEAM_1:1:2");
+    for (const snapshot of data) {
+        insertSnapshot(snapshot);
+    }
+    data = generateData(50, "STEAM_1:1:3");
+    for (const snapshot of data) {
+        insertSnapshot(snapshot);
+    }
+    data = generateData(50, "STEAM_1:1:4");
+    for (const snapshot of data) {
+        insertSnapshot(snapshot);
+    }
+    data = generateData(50, "STEAM_1:1:5");
     for (const snapshot of data) {
         insertSnapshot(snapshot);
     }
@@ -82,14 +100,23 @@ function createDB() {
           tpPoints INTEGER NOT NULL,
           tpRecords INTEGER NOT NULL,
           tpCompletions INTEGER NOT NULL,
-          timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);`,
+          timestamp TEXT NOT NULL);`,
             (err) => {
                 if (err) {
                     console.error(err.message);
                 } else {
                     console.log('Snapshots table created successfully.');
                 }
-            });
+        });
+
+        db.run(`DELETE FROM snapshots`,
+              (err) => {
+                  if (err) {
+                      console.error(err.message);
+                  } else {
+                      console.log('Snapshots table cleared successfully.');
+                  }
+        });
     });
 }
 
@@ -104,8 +131,8 @@ function insertSnapshot(snapshot) {
     const insertQuery = `
         INSERT INTO snapshots (
             steamId, proPoints, proRecords, proCompletions,
-            tpPoints, tpRecords, tpCompletions
-        ) VALUES (?, ?, ?, ?, ?, ?, ?);
+            tpPoints, tpRecords, tpCompletions, timestamp
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
     db.run(insertQuery, [
@@ -115,7 +142,8 @@ function insertSnapshot(snapshot) {
         snapshot.proCompletions,
         snapshot.tpPoints,
         snapshot.tpRecords,
-        snapshot.tpCompletions
+        snapshot.tpCompletions,
+        snapshot.timestamp
     ], (err) => {
         if (err) {
             console.error(err.message);
@@ -125,9 +153,8 @@ function insertSnapshot(snapshot) {
     });
 }
 
-function generateData(days) {
+function generateData(days, steamId) {
     const data = [];
-    let steamId = "STEAM_1:1:1";
     let proPoints = 2000;
     let proRecords = 3;
     let proCompletions = 7;
@@ -149,7 +176,7 @@ function generateData(days) {
             tpPoints,
             tpRecords,
             tpCompletions,
-            timeStamp: timestamp,
+            timestamp
         });
 
         // Update values for the next day
@@ -161,8 +188,6 @@ function generateData(days) {
             tpRecords += Math.floor(Math.random()) + 1;
             tpCompletions += Math.floor(Math.random() * 4) + 1;
         }
-
-        steamId = "STEAM_1:1:" + Math.floor(Math.random() * 10) + 1;
     }
 
     return data;
