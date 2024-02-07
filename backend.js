@@ -108,15 +108,6 @@ function createDB() {
                     console.log('Snapshots table created successfully.');
                 }
         });
-
-        db.run(`DELETE FROM snapshots`,
-              (err) => {
-                  if (err) {
-                      console.error(err.message);
-                  } else {
-                      console.log('Snapshots table cleared successfully.');
-                  }
-        });
     });
 }
 

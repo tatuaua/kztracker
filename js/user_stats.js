@@ -15,11 +15,6 @@ function checkEnter(event) {
     }
 }
 
-//from borbkz kz.gl
-function isValidSteamId32(steamId) {
-    return /^STEAM_[0-5]:[01]:\d+$/.test(steamId);
-}
-
 function loadStatsPage(steamId) {
     window.location.href = '/' + steamId;
 }
@@ -46,14 +41,14 @@ function showUserStats() {
         });
 }
 
-function getUserName(steamId) {
-    //Get username from steam API
-    return "PlayerName";
-}
-
 //from borbkz kz.gl
 function isValidSteamId32(steamId) {
-    return /^STEAM_[0-5]:[01]:\d+$/.test(steamId);
+    return /^STEAM_[0-5]:[01]:\d{1,50}$/.test(steamId);
+}
+
+function getUserName(steamId) {
+    //Get username from API
+    return "PlayerName";
 }
 
 async function getUserStats(steamId) {

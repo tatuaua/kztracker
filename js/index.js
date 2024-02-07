@@ -21,6 +21,11 @@ function checkEnter(event) {
     }
 }
 
+//from borbkz kz.gl
+function isValidSteamId32(steamId) {
+    return /^STEAM_[0-5]:[01]:\d{1,50}$/.test(steamId);
+}
+
 function loadStatsPage(steamId) {
     console.log(steamId);
     window.location.href = '/' + steamId;
@@ -34,7 +39,4 @@ async function getTop10() {
     playerList.innerHTML = names.map(name => `<li>${name}</li>`).join('');
 }
 
-//from borbkz kz.gl
-function isValidSteamId32(steamId) {
-    return /^STEAM_[0-5]:[01]:\d+$/.test(steamId);
-}
+
