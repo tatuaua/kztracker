@@ -30,10 +30,11 @@ function showUserStats() {
                 console.log(data);
                 renderPointsLine(data, playerName);
                 renderPointsAvgLine(data, playerName);
+                renderljPBLine(data, playerName);
                 const end = performance.now();
                 console.log(`Execution time: ${end - start} ms`);
             } else {
-                console.error("Empty or invalid data received");
+                console.error("No data found for steamId");
             }
         })
         .catch(error => {
@@ -149,6 +150,7 @@ function renderPointsLine(data, playerName) {
         .attr("class", "line")
         .attr("d", totalLine)
         .style("stroke", totalLineColor)
+        .style("stroke-width", 2)
         .style("fill", "none");
 
     // Add the X Axis with adjusted dimensions and axis color
@@ -238,6 +240,7 @@ function renderPointsAvgLine(data, playerName) {
         .attr("class", "line")
         .attr("d", valueline)
         .style("stroke", lineColor)
+        .style("stroke-width", 2)
         .style("fill", "none");
 
     // Add the X Axis with adjusted dimensions and axis color
@@ -277,4 +280,94 @@ function renderPointsAvgLine(data, playerName) {
         .style("font-size", "20px")
         .style("fill", axisColor)
         .text(playerName + "'s Points Average Progression");
+}
+
+function renderljPBLine(data, playerName) {
+    // Select the container for the line graph
+    var container = d3.select(".ljpbline");
+
+    // Set the dimensions and increased margins of the graph
+    var width = 800;
+    var height = 400;
+    var margin = { top: 50, right: 50, bottom: 50, left: 70 };
+
+    // Parse the date/time
+    var parseTime = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
+
+    // Define colors
+    var lineColor = "#007770";  // Line color
+    var axisColor = "#ffffff";  // Axis color
+
+    // Format the data
+    data.forEach(function (d) {
+        d.timestamp = new Date(d.timestamp);
+    });
+
+    // Set the ranges
+    var x = d3.scaleTime().range([0, width - margin.left - margin.right]);
+    var y = d3.scaleLinear().range([height - margin.top - margin.bottom, 0]);
+
+    // Define the line
+    var valueline = d3.line()
+        .x(function (d) { return x(d.timestamp); })
+        .y(function (d) { return y(d.ljPB); })
+        .curve(d3.curveMonotoneX);
+
+    // Append an SVG object to the container with adjusted dimensions
+    var svg = container.append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Scale the range of the data
+    x.domain(d3.extent(data, function (d) { return d.timestamp; }));
+    y.domain([d3.min(data, function (d) { return d.ljPB; }), d3.max(data, function (d) { return d.ljPB; })]);
+
+    // Add the valueline path with line color
+    svg.append("path")
+        .data([data])
+        .attr("class", "line")
+        .attr("d", valueline)
+        .style("stroke", lineColor)
+        .style("stroke-width", 2)
+        .style("fill", "none");
+
+    // Add the X Axis with adjusted dimensions and axis color
+    svg.append("g")
+        .attr("transform", "translate(0," + (height - margin.top - margin.bottom) + ")")
+        .call(d3.axisBottom(x).tickSizeOuter(0))
+        .selectAll("text")
+        .style("fill", axisColor);
+
+    // Add the Y Axis with adjusted dimensions and axis color
+    svg.append("g")
+        .call(d3.axisLeft(y).tickSizeOuter(0))
+        .selectAll("text")
+        .style("fill", axisColor);
+
+    // Add a title
+    svg.append("text")
+        .attr("transform", "translate(" + ((width - margin.left - margin.right) / 2) + " ," + (height - margin.top) + ")")
+        .style("text-anchor", "middle")
+        .style("fill", axisColor)
+        .text("Date");
+
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - ((height - margin.top - margin.bottom) / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("fill", axisColor)
+        .text("LJ PB");
+
+    // Add a title with axis color
+    svg.append("text")
+        .attr("x", (width - margin.left - margin.right) / 2)
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "20px")
+        .style("fill", axisColor)
+        .text(playerName + "'s Longjump PB Progression");        
 }
