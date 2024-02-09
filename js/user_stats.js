@@ -1,11 +1,7 @@
 "use strict";
 
-const tempElement = document.createElement("div");
-tempElement.innerHTML = steamId;
-const steamIdDecoded = tempElement.textContent;
-
 window.onload = showUserStats(),
-    document.title = "KZTracker - " + getUserName(steamIdDecoded);
+    document.title = "KZTracker - " + getUserName(steamId);
 
 function checkEnter(event) {
     if (event.key === "Enter") {
@@ -20,10 +16,10 @@ function loadStatsPage(steamId) {
 }
 
 function showUserStats() {
-    var playerName = getUserName(steamIdDecoded);
+    var playerName = getUserName(steamId);
 
     // Call getUserStats and wait for the promise to resolve
-    getUserStats(steamIdDecoded)
+    getUserStats(steamId)
         .then(data => {
             if (data && data.length > 0) {
                 const start = performance.now();

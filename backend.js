@@ -24,7 +24,6 @@ app.get('/', (req, res) => {
 app.get('/:steamId', (req, res) => {
     const steamId = req.params.steamId;
 
-    // Use userExists to check if the user exists
     userExists(steamId, (err, exists) => {
         if (err) {
             console.error('Error checking user existence:', err);
@@ -33,21 +32,17 @@ app.get('/:steamId', (req, res) => {
         }
 
         if (exists) {
-            // If the user exists, render the 'user_stats' view
-            res.render('user_stats', { steamId: JSON.stringify(steamId) });
+            res.render('user_stats', { steamId });
         } else {
-            // If the user doesn't exist, render the 'user_not_found' view
-            res.render('user_not_found', { steamId: JSON.stringify(steamId) });
+            res.render('user_not_found', { steamId });
         }
     });
 });
 
 app.get('/stats/:steamId', (req, res) => {
-    // Access database and get stats for the given steamid, json response
 
     const steamId = req.params.steamId;
 
-    // Check if the database instance is available
     if (!db) {
         console.error('Database instance not available.');
         return;
@@ -55,20 +50,14 @@ app.get('/stats/:steamId', (req, res) => {
 
     console.log(steamId);
 
-    let sql = "SELECT * FROM snapshots WHERE steamId == " + steamId + " ORDER BY timestamp;";
+    let sql = "SELECT * FROM snapshots WHERE steamId == ? ORDER BY timestamp;";
 
-    let rows;
-
-    db.all(sql, [], (err, rows) => {
+    db.all(sql, [steamId], (err, rows) => {
         if (err) {
             throw err;
         }
-
         res.json(rows);
     });
-
-    //res.json(generateData(400));
-
 });
 
 // Start the server
@@ -76,7 +65,6 @@ app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
     createDB();
 
-    // Call the method to clear the database
     clearDatabase();
 
     data = generateData(50, "STEAM_1:1:1");
@@ -113,7 +101,6 @@ function createDB() {
         }
         console.log('Connected to the KZTracker database.');
 
-        // Create the snapshots table
         db.run(`CREATE TABLE IF NOT EXISTS snapshots (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             steamId TEXT NOT NULL,
@@ -147,13 +134,11 @@ function createDB() {
 }
 
 function clearDatabase() {
-    // Check if the database instance is available
     if (!db) {
         console.error('Database instance not available.');
         return;
     }
 
-    // Delete all data from the 'snapshots' table
     const clearSnapshots = 'DELETE FROM snapshots';
     db.run(clearSnapshots, (err) => {
         if (err) {
@@ -163,7 +148,6 @@ function clearDatabase() {
         }
     });
 
-    // Delete all data from the 'users' table
     const clearUsers = 'DELETE FROM users';
     db.run(clearUsers, (err) => {
         if (err) {
@@ -185,33 +169,27 @@ function userExists(steamId, callback) {
     db.all(sql, [steamId], (err, rows) => {
         if (err) {
             console.error(err);
-            // Handle the error, for example, by calling the callback with an error parameter
             callback(err, null);
             return;
         }
 
-        // If there are rows, the user exists; otherwise, it doesn't
         const userExists = rows.length > 0;
 
-        // Call the callback with the result
         callback(null, userExists);
     });
 }
 
 function insertSnapshot(snapshot) {
-    // Check if the database instance is available
     if (!db) {
         console.error('Database instance not available.');
         return;
     }
 
-    // Insert the snapshot into the snapshots table
     const insertQuery = `
         INSERT OR REPLACE INTO snapshots (
             steamId, proPoints, proRecords, proCompletions,
             tpPoints, tpRecords, tpCompletions, ljPB, timestamp
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-    `;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
     db.run(insertQuery, [
         snapshot.steamId,
@@ -231,13 +209,11 @@ function insertSnapshot(snapshot) {
 }
 
 function insertUser(steamId){
-    // Check if the database instance is available
     if (!db) {
         console.error('Database instance not available.');
         return;
     }
 
-    // Insert the snapshot into the snapshots table
     const insertQuery = `
         INSERT OR REPLACE INTO users (
             steamId
@@ -266,7 +242,6 @@ function generateData(days, steamId) {
     const startDate = moment('2017-01-01');
 
     for (let i = 0; i < days; i++) {
-        // Use format() to generate a custom formatted timestamp without the 'Z'
         const timestamp = startDate.clone().add(i, 'days').format('YYYY-MM-DDTHH:mm:ss.SSS');
 
         data.push({
@@ -281,7 +256,6 @@ function generateData(days, steamId) {
             timestamp
         });
 
-        // Update values for the next day
         if (Math.random() > 0.25) { // 1 in 4 chance the player doesn't play per day
             proPoints += Math.floor(Math.random() * 1000) + 1;
             proRecords += Math.floor(Math.random()) + 1;
