@@ -84,7 +84,7 @@ function renderPointsLine(data, playerName) {
 
     // Format the data
     data.forEach(function (d) {
-        d.timestamp = parseTime(d.timestamp);
+        d.customTimestamp = parseTime(d.customTimestamp);
         d.proPoints = +d.proPoints; // Convert to number
         d.tpPoints = +d.tpPoints; // Convert to number
     });
@@ -101,17 +101,17 @@ function renderPointsLine(data, playerName) {
 
     // Define the lines
     var proLine = d3.line()
-        .x(function (d) { return x(d.timestamp); })
+        .x(function (d) { return x(d.customTimestamp); })
         .y(function (d) { return y(d.proPoints); })
         .curve(d3.curveMonotoneX);
 
     var tpLine = d3.line()
-        .x(function (d) { return x(d.timestamp); })
+        .x(function (d) { return x(d.customTimestamp); })
         .y(function (d) { return y(d.tpPoints); })
         .curve(d3.curveMonotoneX);
 
     var totalLine = d3.line()
-        .x(function (d) { return x(d.timestamp); })
+        .x(function (d) { return x(d.customTimestamp); })
         .y(function (d) { return y(d.proPoints + d.tpPoints); })
         .curve(d3.curveMonotoneX);
 
@@ -123,7 +123,7 @@ function renderPointsLine(data, playerName) {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Scale the range of the data
-    x.domain(d3.extent(data, function (d) { return d.timestamp; }));
+    x.domain(d3.extent(data, function (d) { return d.customTimestamp; }));
     y.domain([0, d3.max(data, function (d) { return d.proPoints + d.tpPoints; })]);
 
     // Add the Pro Points line
@@ -208,7 +208,7 @@ function renderPointsAvgLine(data, playerName) {
 
     // Format the data
     data.forEach(function (d) {
-        d.timestamp = new Date(d.timestamp);
+        d.customTimestamp = new Date(d.customTimestamp);
     });
 
     // Set the ranges
@@ -217,7 +217,7 @@ function renderPointsAvgLine(data, playerName) {
 
     // Define the line
     var valueline = d3.line()
-        .x(function (d) { return x(d.timestamp); })
+        .x(function (d) { return x(d.customTimestamp); })
         .y(function (d) { return y(d.proPoints / d.proCompletions); })
         .curve(d3.curveMonotoneX);
 
@@ -229,7 +229,7 @@ function renderPointsAvgLine(data, playerName) {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Scale the range of the data
-    x.domain(d3.extent(data, function (d) { return d.timestamp; }));
+    x.domain(d3.extent(data, function (d) { return d.customTimestamp; }));
     y.domain([0, d3.max(data, function (d) { return d.proPoints / d.proCompletions; })]);
 
     // Add the valueline path with line color
@@ -298,7 +298,7 @@ function renderljPBLine(data, playerName) {
 
     // Format the data
     data.forEach(function (d) {
-        d.timestamp = new Date(d.timestamp);
+        d.customTimestamp = new Date(d.customTimestamp);
     });
 
     // Set the ranges
@@ -307,7 +307,7 @@ function renderljPBLine(data, playerName) {
 
     // Define the line
     var valueline = d3.line()
-        .x(function (d) { return x(d.timestamp); })
+        .x(function (d) { return x(d.customTimestamp); })
         .y(function (d) { return y(d.ljPB); })
         .curve(d3.curveMonotoneX);
 
@@ -319,7 +319,7 @@ function renderljPBLine(data, playerName) {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Scale the range of the data
-    x.domain(d3.extent(data, function (d) { return d.timestamp; }));
+    x.domain(d3.extent(data, function (d) { return d.customTimestamp; }));
     y.domain([d3.min(data, function (d) { return d.ljPB; }), d3.max(data, function (d) { return d.ljPB; })]);
 
     // Add the valueline path with line color

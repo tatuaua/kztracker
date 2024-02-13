@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const moment = require('moment');
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql');
 
 const app = express();
 const port = 3000;
@@ -16,6 +16,15 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
+
+// Create MySQL connection pool
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: 'password',
+    database: 'kztracker',
+    connectionLimit: 10,
+});
 
 app.get('/', (req, res) => {
     res.render('index');
@@ -40,7 +49,6 @@ app.get('/:steamId', (req, res) => {
 });
 
 app.get('/stats/:steamId', (req, res) => {
-
     const steamId = req.params.steamId;
 
     if (!db) {
@@ -48,11 +56,9 @@ app.get('/stats/:steamId', (req, res) => {
         return;
     }
 
-    console.log(steamId);
+    let sql = "SELECT * FROM snapshots WHERE steamId = ? ORDER BY customTimestamp;";
 
-    let sql = "SELECT * FROM snapshots WHERE steamId == ? ORDER BY timestamp;";
-
-    db.all(sql, [steamId], (err, rows) => {
+    pool.query(sql, [steamId], (err, rows) => {
         if (err) {
             throw err;
         }
@@ -69,7 +75,7 @@ app.listen(port, () => {
 
     var data;
     
-    data = generateData(500, "STEAM_1:1:1");
+    data = generateData(50, "STEAM_1:1:1");
     for (const snapshot of data) {
         insertSnapshot(snapshot);
         insertUser("STEAM_1:1:1");
@@ -97,43 +103,60 @@ app.listen(port, () => {
 });
 
 function createDB() {
-    db = new sqlite3.Database('./kztracker.db', sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE, (err) => {
+
+    db = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: 'password',
+        database: 'kztracker',
+    });
+
+    db.connect((err) => {
         if (err) {
             console.error(err.message);
         }
         console.log('Connected to the KZTracker database.');
 
-        db.run(`CREATE TABLE IF NOT EXISTS snapshots (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            steamId TEXT NOT NULL,
-            proPoints INTEGER NOT NULL,
-            proRecords INTEGER NOT NULL,
-            proCompletions INTEGER NOT NULL,
-            tpPoints INTEGER NOT NULL,
-            tpRecords INTEGER NOT NULL,
-            tpCompletions INTEGER NOT NULL,
-            ljPB REAL NOT NULL,
-            timestamp TEXT NOT NULL);`,
-            (err) => {
-                if (err) {
-                    console.error(err.message);
-                } else {
-                    console.log('Snapshots table created successfully.');
-                }
+        // Create tables using query method
+        const createSnapshotsTable = `
+            CREATE TABLE IF NOT EXISTS snapshots (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                steamId VARCHAR(255) NOT NULL,
+                proPoints INT NOT NULL,
+                proRecords INT NOT NULL,
+                proCompletions INT NOT NULL,
+                tpPoints INT NOT NULL,
+                tpRecords INT NOT NULL,
+                tpCompletions INT NOT NULL,
+                ljPB FLOAT NOT NULL,
+                customTimestamp VARCHAR(255) NOT NULL
+            );`;
+
+        const createUsersTable = `
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                steamId VARCHAR(255) NOT NULL
+            );`;
+
+        db.query(createSnapshotsTable, (err) => {
+            if (err) {
+                console.error(err.message);
+            } else {
+                console.log('Snapshots table created successfully.');
+            }
         });
 
-        db.run(`CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            steamId TEXT NOT NULL);`,
-            (err) => {
-                if (err) {
-                    console.error(err.message);
-                } else {
-                    console.log('Users table created successfully.');
-                }
+        db.query(createUsersTable, (err) => {
+            if (err) {
+                console.error(err.message);
+            } else {
+                console.log('Users table created successfully.');
+            }
         });
     });
 }
+
+
 
 function clearDB() {
     if (!db) {
@@ -142,7 +165,7 @@ function clearDB() {
     }
 
     const clearSnapshots = 'DELETE FROM snapshots';
-    db.run(clearSnapshots, (err) => {
+    db.query(clearSnapshots, (err) => {
         if (err) {
             console.error(err.message);
         } else {
@@ -151,7 +174,7 @@ function clearDB() {
     });
 
     const clearUsers = 'DELETE FROM users';
-    db.run(clearUsers, (err) => {
+    db.query(clearUsers, (err) => {
         if (err) {
             console.error(err.message);
         } else {
@@ -168,14 +191,14 @@ function userExists(steamId, callback) {
 
     let sql = "SELECT * FROM users WHERE steamId = ?;";
 
-    db.all(sql, [steamId], (err, rows) => {
+    db.query(sql, [steamId], (err, results) => {
         if (err) {
-            console.error(err);
+            console.error(err.message);
             callback(err, null);
             return;
         }
 
-        const userExists = rows.length > 0;
+        const userExists = results.length > 0;
 
         callback(null, userExists);
     });
@@ -188,12 +211,21 @@ function insertSnapshot(snapshot) {
     }
 
     const insertQuery = `
-        INSERT OR REPLACE INTO snapshots (
+        INSERT INTO snapshots (
             steamId, proPoints, proRecords, proCompletions,
-            tpPoints, tpRecords, tpCompletions, ljPB, timestamp
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+            tpPoints, tpRecords, tpCompletions, ljPB, customTimestamp
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            proPoints = VALUES(proPoints),
+            proRecords = VALUES(proRecords),
+            proCompletions = VALUES(proCompletions),
+            tpPoints = VALUES(tpPoints),
+            tpRecords = VALUES(tpRecords),
+            tpCompletions = VALUES(tpCompletions),
+            ljPB = VALUES(ljPB),
+            customTimestamp = VALUES(customTimestamp);`;
 
-    db.run(insertQuery, [
+    db.query(insertQuery, [
         snapshot.steamId,
         snapshot.proPoints,
         snapshot.proRecords,
@@ -202,7 +234,7 @@ function insertSnapshot(snapshot) {
         snapshot.tpRecords,
         snapshot.tpCompletions,
         snapshot.ljPB,
-        snapshot.timestamp
+        snapshot.customTimestamp
     ], (err) => {
         if (err) {
             console.error(err.message);
@@ -210,21 +242,19 @@ function insertSnapshot(snapshot) {
     });
 }
 
-function insertUser(steamId){
+function insertUser(steamId) {
     if (!db) {
         console.error('Database instance not available.');
         return;
     }
 
     const insertQuery = `
-        INSERT OR REPLACE INTO users (
+        INSERT IGNORE INTO users (
             steamId
         ) VALUES (?);
     `;
 
-    db.run(insertQuery, [
-       steamId
-    ], (err) => {
+    db.query(insertQuery, [steamId], (err) => {
         if (err) {
             console.error(err.message);
         }
@@ -244,7 +274,7 @@ function generateData(days, steamId) {
     const startDate = moment('2017-01-01');
 
     for (let i = 0; i < days; i++) {
-        const timestamp = startDate.clone().add(i, 'days').format('YYYY-MM-DDTHH:mm:ss.SSS');
+        const customTimestamp = startDate.clone().add(i, 'days').format('YYYY-MM-DDTHH:mm:ss.SSS');
 
         data.push({
             steamId,
@@ -255,7 +285,7 @@ function generateData(days, steamId) {
             tpRecords,
             tpCompletions,
             ljPB,
-            timestamp
+            customTimestamp
         });
 
         if (Math.random() > 0.25) { // 1 in 4 chance the player doesn't play per day
@@ -276,17 +306,17 @@ function generateData(days, steamId) {
 }
 
 /*const myData = [
-      {steamId: "STEAM_1:1:1", proPoints: 2000, proRecords: 3, proCompletions: 7, tpPoints: 100, tpRecords: 1, tpCompletions: 5, timeStamp: "2017-01-01T17:09:42.411" },
-      { proPoints: 2500, proRecords: 5, proCompletions: 12, tpPoints: 150, tpCompletions: 8, timeStamp: "2017-01-02T17:09:42.411" },
-      { proPoints: 2800, proRecords: 7, proCompletions: 15, tpPoints: 180, tpCompletions: 10, timeStamp: "2017-01-03T17:09:42.411" },
-      { proPoints: 3200, proRecords: 9, proCompletions: 18, tpPoints: 200, tpCompletions: 12, timeStamp: "2017-01-04T17:09:42.411" },
-      { proPoints: 3700, proRecords: 12, proCompletions: 23, tpPoints: 250, tpCompletions: 15, timeStamp: "2017-01-05T17:09:42.411" },
-      { proPoints: 4100, proRecords: 15, proCompletions: 27, tpPoints: 300, tpCompletions: 18, timeStamp: "2017-01-06T17:09:42.411" },
-      { proPoints: 4500, proRecords: 18, proCompletions: 30, tpPoints: 350, tpCompletions: 20, timeStamp: "2017-01-07T17:09:42.411" },
-      { proPoints: 5000, proRecords: 22, proCompletions: 32, tpPoints: 400, tpCompletions: 22, timeStamp: "2017-01-08T17:09:42.411" },
-      { proPoints: 5500, proRecords: 26, proCompletions: 35, tpPoints: 450, tpCompletions: 25, timeStamp: "2017-01-09T17:09:42.411" },
-      { proPoints: 6000, proRecords: 30, proCompletions: 38, tpPoints: 500, tpCompletions: 28, timeStamp: "2017-01-10T17:09:42.411" },
-      { proPoints: 6500, proRecords: 35, proCompletions: 42, tpPoints: 550, tpCompletions: 30, timeStamp: "2017-01-11T17:09:42.411" },
-      { proPoints: 7000, proRecords: 40, proCompletions: 44, tpPoints: 600, tpCompletions: 32, timeStamp: "2017-01-12T17:09:42.411" },
-      { proPoints: 10000, proRecords: 40, proCompletions: 50, tpPoints: 1000, tpCompletions: 40, timeStamp: "2017-01-13T17:09:42.411" }
+      {steamId: "STEAM_1:1:1", proPoints: 2000, proRecords: 3, proCompletions: 7, tpPoints: 100, tpRecords: 1, tpCompletions: 5, customTimestamp: "2017-01-01T17:09:42.411" },
+      { proPoints: 2500, proRecords: 5, proCompletions: 12, tpPoints: 150, tpCompletions: 8, customTimestamp: "2017-01-02T17:09:42.411" },
+      { proPoints: 2800, proRecords: 7, proCompletions: 15, tpPoints: 180, tpCompletions: 10, customTimestamp: "2017-01-03T17:09:42.411" },
+      { proPoints: 3200, proRecords: 9, proCompletions: 18, tpPoints: 200, tpCompletions: 12, customTimestamp: "2017-01-04T17:09:42.411" },
+      { proPoints: 3700, proRecords: 12, proCompletions: 23, tpPoints: 250, tpCompletions: 15, customTimestamp: "2017-01-05T17:09:42.411" },
+      { proPoints: 4100, proRecords: 15, proCompletions: 27, tpPoints: 300, tpCompletions: 18, customTimestamp: "2017-01-06T17:09:42.411" },
+      { proPoints: 4500, proRecords: 18, proCompletions: 30, tpPoints: 350, tpCompletions: 20, customTimestamp: "2017-01-07T17:09:42.411" },
+      { proPoints: 5000, proRecords: 22, proCompletions: 32, tpPoints: 400, tpCompletions: 22, customTimestamp: "2017-01-08T17:09:42.411" },
+      { proPoints: 5500, proRecords: 26, proCompletions: 35, tpPoints: 450, tpCompletions: 25, customTimestamp: "2017-01-09T17:09:42.411" },
+      { proPoints: 6000, proRecords: 30, proCompletions: 38, tpPoints: 500, tpCompletions: 28, customTimestamp: "2017-01-10T17:09:42.411" },
+      { proPoints: 6500, proRecords: 35, proCompletions: 42, tpPoints: 550, tpCompletions: 30, customTimestamp: "2017-01-11T17:09:42.411" },
+      { proPoints: 7000, proRecords: 40, proCompletions: 44, tpPoints: 600, tpCompletions: 32, customTimestamp: "2017-01-12T17:09:42.411" },
+      { proPoints: 10000, proRecords: 40, proCompletions: 50, tpPoints: 1000, tpCompletions: 40, customTimestamp: "2017-01-13T17:09:42.411" }
     ];*/
