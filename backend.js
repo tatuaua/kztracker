@@ -3,6 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const moment = require('moment');
 const mysql = require('mysql');
+require('dotenv').config()
 
 const app = express();
 const port = 3000;
@@ -19,10 +20,10 @@ app.set('view engine', 'html');
 
 // Create MySQL connection pool
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'kztracker',
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB,
     connectionLimit: 10,
 });
 
@@ -105,10 +106,10 @@ app.listen(port, () => {
 function createDB() {
 
     db = mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        password: 'password',
-        database: 'kztracker',
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB
     });
 
     db.connect((err) => {
