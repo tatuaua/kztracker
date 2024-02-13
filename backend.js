@@ -10,7 +10,7 @@ const port = 3000;
 let db;
 
 app.use(cors());
-app.use(express.static('js'));
+app.use(express.static('js-and-css'));
 
 app.set('views', path.join(__dirname, 'views'));
 
@@ -65,9 +65,11 @@ app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
     createDB();
 
-    clearDatabase();
+    clearDB();
 
-    data = generateData(50, "STEAM_1:1:1");
+    var data;
+    
+    data = generateData(500, "STEAM_1:1:1");
     for (const snapshot of data) {
         insertSnapshot(snapshot);
         insertUser("STEAM_1:1:1");
@@ -133,7 +135,7 @@ function createDB() {
     });
 }
 
-function clearDatabase() {
+function clearDB() {
     if (!db) {
         console.error('Database instance not available.');
         return;
@@ -272,6 +274,7 @@ function generateData(days, steamId) {
 
     return data;
 }
+
 /*const myData = [
       {steamId: "STEAM_1:1:1", proPoints: 2000, proRecords: 3, proCompletions: 7, tpPoints: 100, tpRecords: 1, tpCompletions: 5, timeStamp: "2017-01-01T17:09:42.411" },
       { proPoints: 2500, proRecords: 5, proCompletions: 12, tpPoints: 150, tpCompletions: 8, timeStamp: "2017-01-02T17:09:42.411" },
