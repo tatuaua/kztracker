@@ -11,19 +11,22 @@
     <link rel="stylesheet" href="user_stats.css">
 </head>
 <body>
-    <div class="container">
+    <div class="top">
+        <input type="text" id="steamIdField" class="text-field" placeholder="Steam ID" onkeydown="checkEnter(event)">
+        <div id="errorMessage">Invalid Steam ID</div>
         <div class="social-links">
             <p >// Discord: tatska.</p>
             <a href="https://github.com/tatuaua/kztracker" target="_blank">// GitHub</a>
         </div>
-        <input type="text" id="steamIdField" class="text-field" placeholder="Steam ID" onkeydown="checkEnter(event)">
+    </div>
+    <div class="container">
         <div class="graph-container">
-            <div class="pointsline">
-            </div>
-            <div class="pointsavgline">
-            </div>
-            <div class="ljpbline">
-            </div>
+            <div class="pointsline"></div>
+            <div class="pointsavgline"></div>
+            <div class="ljpbline"></div>
+        </div>
+        <div class="history-container">
+            <div class="runs-list">BLABLABLA</div>
         </div>
     </div>
 

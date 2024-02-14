@@ -6,10 +6,21 @@ window.onload = showUserStats(),
     document.title = "KZTracker - " + getUserName(steamId);
 
 function checkEnter(event) {
+    const steamIdField = document.getElementById('steamIdField');
+    const errorMessage = document.getElementById('errorMessage');
+
     if (event.key === "Enter") {
-        if (isValidSteamId32(document.getElementById('steamIdField').value)) {
-            loadStatsPage(document.getElementById('steamIdField').value);
+        const steamId = steamIdField.value;
+        if (isValidSteamId32(steamId)) {
+            loadStatsPage(steamId);
+            errorMessage.style.display = 'none'; // Hide error message if valid
+        } else {
+            steamIdField.style.border = "2px solid #fc0303";
+            errorMessage.style.display = 'block'; // Show error message
         }
+    } else {
+        steamIdField.style.border = "2px solid #007770";
+        errorMessage.style.display = 'none'; // Hide error message on keypress
     }
 }
 

@@ -7,6 +7,26 @@ body {
     text-align: center;
 }
 
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.history-container {
+    width: 300px;
+    padding: 10px; 
+    padding-top: 20px;
+    border: 2px solid #007770; 
+    border-radius: 7px;
+    background-color: #333; 
+    color: #777;
+    position: relative;
+    margin-left: 30px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
 .graph-container {
     display: flex;
     flex-direction: column;
@@ -17,7 +37,7 @@ body {
 
 /* Only targets the graph containers, not the graphs */
 .graph-container > * {
-    margin-bottom: 80px;
+    margin-bottom: 30px;
 }
 
 .text-field {
@@ -82,8 +102,18 @@ body {
     color: #fff;
 }
 
+#errorMessage {
+    color: #fc0303;
+    font-size: 14px;
+    display: none;
+    position: absolute;
+    left: 46.5%;
+    top: 70px;
+}
+
 .social-links {
     position: absolute;
+    top: 0px;
     left: 25px;
     display: flex;
     flex-direction: column;

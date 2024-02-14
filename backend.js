@@ -71,8 +71,8 @@ app.get('/stats/:steamId', (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
     createDB();
-
     clearDB();
+    //generateUsers(10);
 
     var data;
     
@@ -101,6 +101,7 @@ app.listen(port, () => {
         insertSnapshot(snapshot);
         insertUser("STEAM_1:1:5");
     }
+
 });
 
 function createDB() {
@@ -263,6 +264,7 @@ function insertUser(steamId) {
 }
 
 function generateData(days, steamId) {
+
     const data = [];
     let proPoints = 2000;
     let proRecords = 3;
@@ -304,6 +306,26 @@ function generateData(days, steamId) {
     }
 
     return data;
+}
+
+function generateUsers(amount){
+
+    let ssTotal = 0;
+    for(let i = 0; i < amount; i++){
+
+        var data;
+    
+        let ssAmount = Math.floor(Math.random() * 500) + 1
+        ssTotal += ssAmount;
+        data = generateData(ssAmount, "STEAM_1:1:" + amount);
+        for (const snapshot of data) {
+            insertSnapshot(snapshot);
+        }
+
+        insertUser("STEAM_1:1:" + amount);
+    }
+
+    console.log(ssTotal);
 }
 
 /*const myData = [
