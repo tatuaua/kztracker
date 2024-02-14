@@ -37,14 +37,14 @@ app.get('/:steamId', (req, res) => {
     userExists(steamId, (err, exists) => {
         if (err) {
             console.error('Error checking user existence:', err);
-            res.render('error', { error: 'Error checking user existence' });
+            res.status(400).render('user_not_found', { steamId });
             return;
         }
 
         if (exists) {
-            res.render('user_stats', { steamId });
+            res.status(200).render('user_stats', { steamId });
         } else {
-            res.render('user_not_found', { steamId });
+            res.status(400).render('user_not_found', { steamId });
         }
     });
 });
@@ -54,16 +54,24 @@ app.get('/stats/:steamId', (req, res) => {
 
     if (!db) {
         console.error('Database instance not available.');
+        res.status(500).json({error: 'Internal server error'})
         return;
     }
 
     let sql = "SELECT * FROM snapshots WHERE steamId = ? ORDER BY customTimestamp;";
 
     pool.query(sql, [steamId], (err, rows) => {
+        
         if (err) {
             throw err;
         }
-        res.json(rows);
+
+        if(rows.length == 0) {
+            res.status(400).json({error: 'No data found for specified SteamID'});
+        } else {
+            res.status(200).json(rows);
+        }
+
     });
 });
 
