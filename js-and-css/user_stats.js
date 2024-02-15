@@ -3,7 +3,8 @@
 "use strict";
 
 window.onload = showUserStats(),
-    document.title = "KZTracker - " + getUserName(steamId);
+    document.title = "KZTracker - " + getUserName(steamId),
+    document.getElementById('steamIdField').value = steamId;
 
 function checkEnter(event) {
     const steamIdField = document.getElementById('steamIdField');
