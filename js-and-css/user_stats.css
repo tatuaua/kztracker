@@ -27,6 +27,23 @@ body {
     margin-bottom: 30px;
 }
 
+.history-container p {
+    margin-left: 8px;
+    text-align: left;
+}
+
+.mapname {
+    color:#ddd;
+}
+
+.points {
+    color:red;
+}
+
+.rank {
+    color:red;
+}
+
 .graph-container {
     display: flex;
     flex-direction: column;
@@ -40,7 +57,7 @@ body {
     margin-bottom: 30px;
 }
 
-.text-field {
+#steamIdField {
     width: 300px;
     padding: 10px;
     font-size: 16px;
@@ -50,6 +67,19 @@ body {
     color: #ddd;
     margin-top: 20px; 
     margin-bottom: 50px;
+    position: relative;
+}
+
+#runSearch {
+    width: 250px;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #007770; 
+    border-radius: 7px; 
+    background-color: #444444; 
+    color: #ddd;
+    margin-top: 10px; 
+    margin-bottom: 20px;
     position: relative;
 }
 
