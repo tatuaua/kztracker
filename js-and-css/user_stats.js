@@ -26,6 +26,7 @@ function checkEnter(event) {
 }
 
 function loadStatsPage(steamId) {
+    console.log(window.location.href);
     window.location.href = '/' + steamId;
 }
 
