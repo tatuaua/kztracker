@@ -14,7 +14,7 @@ body {
 }
 
 .history-container {
-    width: 300px;
+    width: 450px;
     padding: 10px; 
     padding-top: 20px;
     border: 2px solid #007770; 
@@ -29,19 +29,37 @@ body {
 
 .history-container p {
     margin-left: 8px;
-    text-align: left;
+    margin-right: 8px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.date, .mapname, .points, .rank {
+    display: inline-block;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.date {
+    width: 50px;
 }
 
 .mapname {
-    color:#ddd;
+    color: #ddd;
+    width: 150px;
 }
 
 .points {
-    color:red;
+    color: red;
+    width: 80px;
 }
 
 .rank {
-    color:red;
+    color: red;
+    width: 30px;
 }
 
 .graph-container {
