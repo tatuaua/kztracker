@@ -3,7 +3,8 @@ const path = require('path');
 const cors = require('cors');
 const moment = require('moment');
 const mysql = require('mysql');
-require('dotenv').config()
+const ejs = require('ejs');
+require('dotenv').config();
 
 const app = express();
 const port = 3000;
@@ -15,7 +16,7 @@ app.use(express.static('js-and-css'));
 
 app.set('views', path.join(__dirname, 'views'));
 
-app.engine('html', require('ejs').renderFile);
+app.engine('html', ejs.renderFile);
 app.set('view engine', 'html');
 
 // Create MySQL connection pool
@@ -110,6 +111,7 @@ app.listen(port, () => {
         insertUser("STEAM_1:1:5");
     }
 
+    insertRun("STEAM_1:1:1");
 });
 
 function createDB() {
@@ -148,6 +150,16 @@ function createDB() {
                 steamId VARCHAR(255) NOT NULL
             );`;
 
+        const createRunsTable = `
+            CREATE TABLE IF NOT EXISTS main_runs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                steamId VARCHAR(255) NOT NULL,
+                date VARCHAR(20) NOT NULL,
+                mapName VARCHAR(255) NOT NULL,
+                points INT NOT NULL,
+                rankNum INT NOT NULL
+            );`;
+
         db.query(createSnapshotsTable, (err) => {
             if (err) {
                 console.error(err.message);
@@ -161,6 +173,14 @@ function createDB() {
                 console.error(err.message);
             } else {
                 console.log('Users table created successfully.');
+            }
+        });
+
+        db.query(createRunsTable, (err) => {
+            if (err) {
+                console.error(err.message);
+            } else {
+                console.log('Runs table created successfully.');
             }
         });
     });
@@ -189,6 +209,15 @@ function clearDB() {
             console.error(err.message);
         } else {
             console.log('Users cleared successfully.');
+        }
+    });
+
+    const clearRuns = 'DELETE FROM main_runs';
+    db.query(clearRuns, (err) => {
+        if (err) {
+            console.error(err.message);
+        } else {
+            console.log('Runs cleared successfully.');
         }
     });
 }
@@ -265,6 +294,36 @@ function insertUser(steamId) {
     `;
 
     db.query(insertQuery, [steamId], (err) => {
+        if (err) {
+            console.error(err.message);
+        }
+    });
+}
+
+function insertRun(steamId){
+
+    if (!db) {
+        console.error('Database instance not available.');
+        return;
+    }
+
+    const insertQuery = `
+        INSERT IGNORE INTO main_runs (
+            steamId,
+            date,
+            mapName,
+            points,
+            rankNum
+        ) VALUES (?, ?, ?, ? ,?);
+    `;
+
+    db.query(insertQuery, [
+        steamId,
+        "27.1",
+        "kz_dogwater",
+        878,
+        12
+        ], (err) => {
         if (err) {
             console.error(err.message);
         }
