@@ -3,6 +3,7 @@
 "use strict";
 
 window.onload = showUserStats(),
+    fillHistoryContainer(50000),
     document.title = "KZTracker - " + getUserName(steamId),
     document.getElementById('steamIdField').value = steamId;
 

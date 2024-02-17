@@ -15,16 +15,18 @@ body {
 
 .history-container {
     width: 450px;
-    padding: 10px; 
+    padding: 10px;
     padding-top: 20px;
-    border: 2px solid #007770; 
+    border: 2px solid #007770;
     border-radius: 7px;
-    background-color: #333; 
+    background-color: #333;
     color: #777;
     position: relative;
     margin-left: 30px;
     margin-top: 20px;
     margin-bottom: 30px;
+    max-height: 1350px;
+    overflow-y: auto; 
 }
 
 .history-container p {
@@ -89,7 +91,7 @@ body {
 }
 
 #runSearch {
-    width: 250px;
+    width: 350px;
     padding: 10px;
     font-size: 16px;
     border: 2px solid #007770; 
